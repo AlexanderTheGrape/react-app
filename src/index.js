@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+// import reportWebVitals from './reportWebVitals';
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// reportWebVitals();
 
 function Square(props) {
   return (
@@ -27,7 +26,7 @@ class Board extends React.Component {
         value={this.props.squares[i]}
         onClick={() => this.props.onclick(i)}
       />
-    )
+    );
   }
 
   render(){
@@ -60,12 +59,13 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null),
       }],
+      gameMoveNumber: 0,
       xIsNext: true,
     };
   }
   
   handleClick(i) {
-    const history = this.state.history;
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length -1];
     const squares = current.squares.slice();
 
@@ -76,16 +76,36 @@ class Game extends React.Component {
     squares[i] = this.state.xIsNext ? 'X' : 'O';
     this.setState({
       history: history.concat([{
-        squares: squares,
+        squares: squares
       }]),
+      gameMoveNumber: history.length,
       xIsNext: !this.state.xIsNext,
     });
   }
 
+  jumpTo(currentHistory) {
+    this.setState({
+      gameMoveNumber: currentHistory,
+      xIsNext: (currentHistory % 2) === 0,
+    })
+  }
+
   render() {
     const history = this.state.history;
-    const current = history[history.length - 1];
+    const current = history[this.state.gameMoveNumber];
     const winner = calculateWinner(current.squares);
+
+    const moves = history.map((currentHistory, index) => {
+      const description = index ?
+        'Go to move #' + index :
+        'Go to game start';
+      return (
+        <li key={index}>
+          <button onClick={() => this.jumpTo(index)}>{description}</button>
+        </li>
+      );
+    });
+
     let status;
     if (winner) {
       status = 'Winner: ' + winner;
@@ -103,7 +123,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
